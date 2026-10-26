@@ -1,0 +1,200 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+  <title>Pixel Quest RPG</title>
+
+  <style>
+    body {
+      background: #1b2333;
+      color: white;
+      font-family: monospace;
+      text-align: center;
+      padding: 15px;
+    }
+
+    h1 {
+      color: #ffd166;
+    }
+
+    canvas {
+      width: 100%;
+      max-width: 320px;
+      border: 3px solid white;
+      background: #70b85b;
+      image-rendering: pixelated;
+    }
+
+    button {
+      padding: 12px;
+      margin: 4px;
+      border: none;
+      border-radius: 8px;
+      background: #34465f;
+      color: white;
+      font-size: 16px;
+    }
+
+    .info {
+      margin: 12px;
+      line-height: 1.8;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>⚔️ Pixel Quest</h1>
+
+  <div class="info">
+    ❤️ HP: <span id="hp">30</span><br>
+    ⭐ Level: <span id="level">1</span><br>
+    💬 <span id="message">Ayo mulai petualangan!</span>
+  </div>
+
+  <canvas id="game" width="320" height="320"></canvas>
+
+  <div>
+    <button onclick="move(0,-1)">⬆️</button><br>
+    <button onclick="move(-1,0)">⬅️</button>
+    <button onclick="move(0,1)">⬇️</button>
+    <button onclick="move(1,0)">➡️</button>
+  </div>
+
+  <div>
+    <button onclick="talk()">💬 Bicara</button>
+    <button onclick="fight()">⚔️ Lawan slime</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+
+    let player = {
+      x: 1,
+      y: 1,
+      hp: 30,
+      level: 1,
+      exp: 0
+    };
+
+    const npc = { x: 5, y: 3 };
+    let slime = { x: 6, y: 5, alive: true };
+
+    function draw() {
+      ctx.clearRect(0, 0, 320, 320);
+
+      // Membuat rumput
+      for (let y = 0; y < 8; y++) {
+        for (let x = 0; x < 8; x++) {
+          ctx.fillStyle =
+            (x + y) % 2 === 0 ? "#70b85b" : "#7dc967";
+
+          ctx.fillRect(x * 40, y * 40, 40, 40);
+        }
+      }
+
+      // Menggambar NPC
+      ctx.fillStyle = "#a78bfa";
+      ctx.fillRect(npc.x * 40 + 10, npc.y * 40 + 10, 20, 25);
+
+      // Menggambar slime
+      if (slime.alive) {
+        ctx.fillStyle = "#9333ea";
+        ctx.beginPath();
+        ctx.arc(
+          slime.x * 40 + 20,
+          slime.y * 40 + 22,
+          14, Math.PI, 0
+        );
+        ctx.fillRect(slime.x * 40 + 6, slime.y * 40 + 22, 28, 10);
+        ctx.fill();
+      }
+
+      // Menggambar pemain
+      ctx.fillStyle = "#38bdf8";
+      ctx.fillRect(
+        player.x * 40 + 10,
+        player.y * 40 + 10,
+        20, 25
+      );
+
+      ctx.fillStyle = "white";
+      ctx.fillRect(player.x * 40 + 14, player.y * 40 + 15, 4, 4);
+      ctx.fillRect(player.x * 40 + 23, player.y * 40 + 15, 4, 4);
+
+      // Memperbarui informasi
+      document.getElementById("hp").textContent = player.hp;
+      document.getElementById("level").textContent = player.level;
+    }
+
+    function move(dx, dy) {
+      const nextX = player.x + dx;
+      const nextY = player.y + dy;
+
+      // Membatasi gerakan di dalam peta
+      if (nextX < 0 || nextX > 7 ||
+          nextY < 0 || nextY > 7) {
+        return;
+      }
+
+      player.x = nextX;
+      player.y = nextY;
+
+      document.getElementById("message").textContent =
+        "Kamu sedang menjelajahi dunia!";
+
+      draw();
+    }
+
+    function talk() {
+      const distance =
+        Math.abs(player.x - npc.x) +
+        Math.abs(player.y - npc.y);
+
+      if (distance <= 1) {
+        document.getElementById("message").textContent =
+          "Penyihir: Tolong kalahkan slime di hutan!";
+      } else {
+        document.getElementById("message").textContent =
+          "Dekati penyihir berwarna ungu dahulu!";
+      }
+    }
+
+    function fight() {
+      if (!slime.alive) {
+        document.getElementById("message").textContent =
+          "Slime sudah dikalahkan!";
+        return;
+      }
+
+      const distance =
+        Math.abs(player.x - slime.x) +
+        Math.abs(player.y - slime.y);
+
+      if (distance > 1) {
+        document.getElementById("message").textContent =
+          "Dekati slime terlebih dahulu!";
+        return;
+      }
+
+      slime.alive = false;
+      player.exp += 10;
+
+      if (player.exp >= 10) {
+        player.level++;
+        player.exp = 0;
+      }
+
+      document.getElementById("message").textContent =
+        "Slime dikalahkan! Kamu naik level!";
+
+      draw();
+    }
+
+    draw();
+  </script>
+</body>
+</html>
